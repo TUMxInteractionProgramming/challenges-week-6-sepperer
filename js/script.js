@@ -33,6 +33,9 @@ function initializeFix()
     listChannels(compareNew); 
     loadEmojis();
 
+    addMessages('Hello...test message one.');
+    addMessages('Hello...test message two.');
+
     // #11 #interval create interval triggering every ten seconds
     var intervall = setInterval(messageUpade,10*1000);
 
@@ -235,6 +238,15 @@ function sendMessage() {
         return;
     }
 
+    // #11 add messages to text
+    addMessages(text);
+
+    // clear the #message input
+    $('#message').val('');
+}
+
+function addMessages(text)
+{
     // Creating and logging a message with content from the input field
     var message = new Message(text);
     console.log("New message:", message);
@@ -250,9 +262,6 @@ function sendMessage() {
 
     // messages will scroll to a certain point if we apply a certain height, in this case the overall scrollHeight of the messages-div that increases with every message;
     $('#messages').scrollTop($('#messages').prop('scrollHeight'));
-
-    // clear the #message input
-    $('#message').val('');
 }
 
 /**
