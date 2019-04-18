@@ -23,10 +23,13 @@ var currentLocation = {
     what3words: "shelf.jetted.purple"
 };
 
-
+/* This is not working in editor on edx (see comments). Therefore moved back to <body onload="">
 // #11 #initialize#ready#app #initialize#onload initialise app
 $(function(){
-
+    initializeFix();
+});*/
+function initializeFix()
+{
     listChannels(compareNew); 
     loadEmojis();
 
@@ -34,7 +37,7 @@ $(function(){
     var intervall = setInterval(messageUpade,10*1000);
 
     console.log('App is initialized');
-});
+}
 
 /**
  * Switch channels name in the right app bar
@@ -178,7 +181,7 @@ function Message(text) {
         var em = this.messageElement.find('em').html(expiresIn + ' min. left');
 
         // #11 #dying mark remaining time primary colored if shorter than 5 minutes
-        if(expiresIn <= 14.6)
+        if(expiresIn <= 0)
         {
             this.messageElement.remove();
             return true;
