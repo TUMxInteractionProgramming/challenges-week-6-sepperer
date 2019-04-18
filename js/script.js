@@ -1,18 +1,6 @@
 /* start the external action and say hello */
 console.log("App is alive");
 
-// #11 #initialize#ready#app #initialize#onload initialise app
-$(function(){
-
-    listChannels(compareNew); 
-    loadEmojis();
-
-    // #11 #interval create interval triggering every ten seconds
-    var intervall = setInterval(messageUpade,10*1000);
-
-    console.log('App is initialized');
-});
-
 /** #10 global #array of channels #arr*/
 var channels = [
     yummy,
@@ -34,6 +22,19 @@ var currentLocation = {
     longitude: 11.634431,
     what3words: "shelf.jetted.purple"
 };
+
+
+// #11 #initialize#ready#app #initialize#onload initialise app
+$(function(){
+
+    listChannels(compareNew); 
+    loadEmojis();
+
+    // #11 #interval create interval triggering every ten seconds
+    var intervall = setInterval(messageUpade,10*1000);
+
+    console.log('App is initialized');
+});
 
 /**
  * Switch channels name in the right app bar
