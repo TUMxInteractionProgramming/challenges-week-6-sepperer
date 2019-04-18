@@ -29,7 +29,7 @@
 
 <!-- render all channels when the body has loaded -->
 <!-- #10 #sorting: append all channels in new #sort order when the body has #load ed ; #10 #emojis added more #suitable-->
-<body onload="listChannels(compareNew); loadEmojis()">
+<body>
 
 <!-- channel area -->
 <!-- #9 #shdw #elv: channels view goes 16dp high, like a nav drawer -->
@@ -93,55 +93,6 @@
     </h1>
 
     <div id="messages">
-
-        <!-- #10 #delete all #message s (or comment them out)-->
-        <!--
-        <div class="message own">
-            <h3><a href="http://w3w.co/cheeses.yard.applies" target="_blank"><strong>cheeses.yard.applies</strong></a>
-                Wed, June 20th, 13:37 <em>15 min. left</em></h3>
-            <p>What's the place you folks call home?</p>
-            <button class="accent">+5 min.</button>
-        </div>
-
-        <div class="message">
-            <h3><a href="http://w3w.co/truck.cotton.zone" target="_blank"><strong>truck.cotton.zone</strong></a>
-                Wed, June 20th, 13:39 <em>4 min. left</em></h3>
-            <p>BRISBANE! Hang loose!</p>
-            <button class="accent">+5 min.</button>
-        </div>
-
-        <div class="message">
-            <h3><a href="http://w3w.co/thus.best.dishes" target="_blank"><strong>thus.best.dishes</strong></a>
-                Wed, June 20th, 14:02 <em>12 min. left</em></h3>
-            <p>The big apple.</p>
-            <button class="accent">+5 min.</button>
-        </div>
-
-        <div class="message">
-            <h3><a href="http://w3w.co/driveway.helper.magazine"
-                   target="_blank"><strong>driveway.helper.magazine</strong></a>
-                Wed, June 20th, 14:02 <em>7 min. left</em></h3>
-            <p>Eu sou um Cariocas.</p>
-            <button class="accent">+5 min.</button>
-        </div>
-
-        <div class="message">
-            <h3><a href="http://w3w.co/escapes.pitch.saucepan"
-                   target="_blank"><strong>escapes.pitch.saucepan</strong></a>
-                Wed, June 20th, 14:07 <em>14 min. left</em></h3>
-            <p>Greetings from the western cape!</p>
-            <button class="accent">+5 min.</button>
-        </div>
-
-        <div class="message">
-            <h3><a href="http://w3w.co/meanings.identity.pays"
-                   target="_blank"><strong>meanings.identity.pays</strong></a>
-                Wed, June 20th, 04:08 <em>15 min. left</em></h3>
-            <p>北京</p>
-            <button class="accent">+5 min.</button>
-        </div>
-        -->
-
     </div>
 
     <!-- ChAT BAR -->
@@ -153,7 +104,10 @@
         </button>
         <!-- #9 #shdw #elv: menu goes 8dp high -->
         <div id="emojis" class="shadow--8dp">&#x1F601; &#x1F602; &#x1F603; &#x1F604; &#x1F605; &#x1F606; &#x1F607;</div>
-        <input type="text" placeholder="Message..." maxlength="140" id="message">
+        <!-- #11 #enter send message when user hits enter-->
+        <input type="text" placeholder="Message..." maxlength="140" id="message" onkeyup="countCharacters()" onkeydown="if(event.keyCode==13) {sendMessage()}">
+        <!-- #11 #counter count number of characters in message-->
+        <span id="character-counter"> 0/140</span>
         <!-- #9 #btns #snd now accented -->
         <!-- #10 #new: id added to be able to address it -->
         <button id="button-send" class="accent" onclick="sendMessage()"><i class="fas fa-arrow-right"></i></button>

@@ -1,6 +1,18 @@
 /* start the external action and say hello */
 console.log("App is alive");
 
+// #11 #initialize#ready#app #initialize#onload initialise app
+$(function(){
+
+    listChannels(compareNew); 
+    loadEmojis();
+
+    // #11 #interval create interval triggering every ten seconds
+    var intervall = setInterval(messageUpade,10*1000);
+
+    console.log('App is initialized');
+});
+
 /** #10 global #array of channels #arr*/
 var channels = [
     yummy,
@@ -26,8 +38,10 @@ var currentLocation = {
 /**
  * Switch channels name in the right app bar
  * @param channelObject
+ * @param channelElement
  */
-function switchChannel(channelObject) {
+// #11 #element channelElement as second parameter
+function switchChannel(channelObject, channelElement) {
     // Log the channel switch
     console.log("Tuning in to channel", channelObject);
 
@@ -52,10 +66,15 @@ function switchChannel(channelObject) {
     /* highlight the selected #channel.
        This is inefficient (jQuery has to search all channel list items), but we'll change it later on */
     $('#channels li').removeClass('selected');
-    $('#channels li:contains(' + channelObject.name + ')').addClass('selected');
+    // #11 #select add class selected to channelElement
+    $(channelElement).addClass('selected');
 
     /* store selected channel in global variable */
     currentChannel = channelObject;
+
+    // #11 #messages load all messages belonging to channel
+    showMessages(channelObject);
+    messageUpade();
 }
 
 /* liking a channel on #click */
@@ -69,8 +88,8 @@ function star() {
     currentChannel.starred = !currentChannel.starred;
 
     // toggle star also in list
-    $('#channels li:contains(' + currentChannel.name + ') .fa').removeClass('fas far');
-    $('#channels li:contains(' + currentChannel.name + ') .fa').addClass(currentChannel.starred ? 'fas' : 'far');
+    $('#channels li:contains(' + currentChannel.name + ') .fa-star').removeClass('fas far');
+    $('#channels li:contains(' + currentChannel.name + ') .fa-star').addClass(currentChannel.starred ? 'fas' : 'far');
 }
 
 /**
@@ -104,8 +123,29 @@ function toggleEmojis() {
 function loadEmojis() {
     var emojis = require('emojis-list');
     $('#emojis').empty();
+
+    // #11 #smiley clicking a smiley adds smiley to message
     for (emoji in emojis) {
-        $('#emojis').append(emojis[emoji] + " ");
+        $('<button>')
+            .html(emojis[emoji])
+                .on('click', function(){clickEmoji(this);})
+                    .appendTo('#emojis');
+    }
+}
+
+/**
+ * #11 #smiley clicking a smiley adds smiley to message
+ */
+function clickEmoji(emoji){
+    var maxLength = $('#message').attr('maxlength');
+    var counter = $('#message').val().length;
+
+    if(counter < maxLength)
+    {
+        $('#message').val($('#message').val() + emoji.innerHTML);
+        countCharacters();
+        toggleEmojis();
+        $('#message').focus();
     }
 }
 
@@ -126,6 +166,58 @@ function Message(text) {
     this.text = text;
     // own message
     this.own = true;
+
+    // #11 #update#reference reference of messageElement
+    this.messageElement;
+
+    // #11 #update outsource functionality to message object
+    this.update = function(){
+
+        var expiresIn = ((this.expiresOn.getTime() - Date.now()) / 60000).toFixed(1);
+        var em = this.messageElement.find('em').html(expiresIn + ' min. left');
+
+        // #11 #dying mark remaining time primary colored if shorter than 5 minutes
+        if(expiresIn <= 14.6)
+        {
+            this.messageElement.remove();
+            return true;
+        }
+        else if(expiresIn < 5)
+        {
+            em.css('color', '#3F51B5');
+        }
+        else
+        {
+            em.css('color', 'black');
+        }
+        return false;
+    }
+}
+
+/**
+ * #11 #interval create interval triggering every ten seconds
+ */
+function messageUpade()
+{
+    console.log("Updating message elements...");
+
+    /*
+    // #11 #time update remaining time
+    $.each(currentChannel.messages, function (index, value) {
+        value.update();
+    });*/
+
+    // #11 #delete change loop for control over index
+    for(index=0; index < currentChannel.messages.length; index++)
+    {
+         // #11 outsource functionality to message object
+         if(currentChannel.messages[index].update())
+         {
+             currentChannel.messages.splice(index, 1);
+             currentChannel.messageCount = currentChannel.messages.length;
+             index--;
+         }
+    }
 }
 
 function sendMessage() {
@@ -166,22 +258,53 @@ function sendMessage() {
  */
 function createMessageElement(messageObject) {
     // Calculating the expiresIn-time from the expiresOn-property
+    // #11 #rework create jQuery messageElement
     var expiresIn = Math.round((messageObject.expiresOn - Date.now()) / 1000 / 60);
 
-    // Creating a message-element
-    return '<div class="message'+
-        //this dynamically adds #own to the #message, based on the
-        //ternary operator. We need () in order not to disrupt the return.
-        (messageObject.own ? ' own' : '') +
-        '">' +
-        '<h3><a href="http://w3w.co/' + messageObject.createdBy + '" target="_blank">'+
-        '<strong>' + messageObject.createdBy + '</strong></a>' +
-        messageObject.createdOn.toLocaleString() +
-        '<em>' + expiresIn + ' min. left</em></h3>' +
-        '<p>' + messageObject.text + '</p>' +
-        '<button class="accent">+5 min.</button>' +
-        '</div>';
+    var messageElement = $('<div>').addClass('message')
+                                    .addClass(messageObject.own ? ' own' : '');
+
+    var head = $('<h3>').appendTo(messageElement);
+
+    $('<a>').attr('href', 'http://w3w.co/' + messageObject.createdBy + '')
+        .attr('target', '_blank')
+        .append($('<strong>').html(messageObject.createdBy))
+        .appendTo(head);
+
+    head.append(messageObject.createdOn.toLocaleString());
+    $('<em>').html(expiresIn + ' min. left').appendTo(head);
+    $('<p>').html(messageObject.text).appendTo(messageElement);
+    $('<button>').addClass('accent').click(function(){addTime(messageObject)}).html('+5 min.').appendTo(messageElement);                         
+    
+    // #11 #update#reference reference of messageElement in messageObject
+    messageObject.messageElement = messageElement;
+
+    return messageElement;
 }
+
+/**
+ * #11 #extend message lifetime
+ */
+function addTime(messageObject)
+{
+    messageObject.expiresOn = new Date(messageObject.expiresOn.getTime() + 5*60*1000);
+    messageObject.update();
+}
+
+/**
+ * #11 #show create all messages that are saved in a channel object
+ */
+function showMessages(channelObject){
+
+    $('#messages').empty();
+
+    $.each(channelObject.messages, function (index, value) {
+        $('#messages').append(createMessageElement(value));})
+
+   $('#messages').scrollTop($('#messages').prop('scrollHeight'));
+}
+
+
 
 /* #10 Three #compare functions to #sort channels */
 /**
@@ -223,7 +346,8 @@ function listChannels(criterion) {
 
     /* #10 append channels from #array with a #for loop */
     for (i = 0; i < channels.length; i++) {
-        $('#channels ul').append(createChannelElement(channels[i]));
+        $('#channels ul').append(createChannelElement(channels[i])
+            .addClass(channels[i].name == currentChannel.name ? 'selected' : ''));
     };
 }
 
@@ -309,7 +433,9 @@ function createChannelElement(channelObject) {
      */
 
     // create a channel
-    var channel = $('<li>').text(channelObject.name);
+    // #11 #channels#click add click event listener and #channels#switch call switchChannel
+    var channel = $('<li>').text(channelObject.name)
+        .click(function(){switchChannel(channelObject, this);});
 
     // create and append channel meta
     var meta = $('<span>').addClass('channel-meta').appendTo(channel);
@@ -354,4 +480,13 @@ function abortCreationMode() {
     $('#app-bar-create').removeClass('show');
     $('#button-create').hide();
     $('#button-send').show();
+}
+
+/**
+ * #11 #counter counts characters of message
+ */
+function countCharacters(){
+    var maxLength = $('#message').attr('maxlength');
+    var counter = $('#message').val().length;
+    $('#character-counter').html(' ' + counter + '/' + maxLength);
 }
